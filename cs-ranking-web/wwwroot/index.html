@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS 1.6 Ranking - Sufficit</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Carregando ranking...</p>
+    </div>
+
+    <!-- Error Overlay -->
+    <div id="error" class="error-overlay hidden">
+        <div class="error-content">
+            <h2>⚠️ Erro ao carregar</h2>
+            <p id="errorMessage">Não foi possível carregar os dados do ranking.</p>
+            <button onclick="loadPlayers()" class="btn-retry">Tentar Novamente</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <div class="header-left">
+                <h1 class="title">
+                    <span class="trophy">🏆</span>
+                    <span class="title-text">CS 1.6 Ranking</span>
+                </h1>
+            </div>
+            <div class="header-center">
+                <div class="live-indicator">
+                    <span class="live-dot"></span>
+                    <span class="live-text">AO VIVO</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="time-filter">
+                    <label for="timeFilter">Período:</label>
+                    <select id="timeFilter" class="time-filter-select">
+                        <option value="1h" selected>1 hora</option>
+                        <option value="5h">5 horas</option>
+                        <option value="1d">1 dia</option>
+                        <option value="7d">7 dias</option>
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+                <a href="steam://connect/cs.sufficit.com.br" class="connect-button-small" title="Conectar ao Servidor">
+                    <span class="connect-icon-small">🎮</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content - Centralizado -->
+    <main class="main-content">
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="totalPlayers">0</div>
+                <div class="stat-label">JOGADORES</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalKills">0</div>
+                <div class="stat-label">KILLS TOTAIS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgKD">0.00</div>
+                <div class="stat-label">K/D MÉDIO</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="updateTime">--:--</div>
+                <div class="stat-label">ÚLTIMA ATUALIZAÇÃO</div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Buscar jogador..." class="search-input">
+            </div>
+            <div class="auto-refresh-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoRefresh" checked>
+                    <span class="slider"></span>
+                </label>
+                <span>Auto-refresh (30s)</span>
+            </div>
+        </div>
+
+        <!-- Ranking Table -->
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th class="rank-column">#</th>
+                            <th class="player-column">JOGADOR</th>
+                            <th class="skill-column">SKILL</th>
+                            <th class="kills-column">KILLS</th>
+                            <th class="deaths-column">DEATHS</th>
+                            <th class="kd-column">K/D</th>
+                            <th class="hs-column">HS</th>
+                            <th class="hs-percent-column">HS %</th>
+                            <th class="time-column">TEMPO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingBody">
+                        <!-- Players will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="pagination-btn" id="prevPage" disabled>← Anterior</button>
+                <span class="pagination-info" id="paginationInfo">Página 1 de 1</span>
+                <button class="pagination-btn" id="nextPage">Próxima →</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <p>© 2024 CS 1.6 Ranking - Sufficit Network</p>
+            <p class="server-info">Servidor: <a href="steam://connect/cs.sufficit.com.br" class="server-link">cs.sufficit.com.br</a></p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

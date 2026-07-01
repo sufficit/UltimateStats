@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  cs-ranking-web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Database__Host=mysql
+      - Database__Database=ultimate_stats
+      - Database__Username=ultimate_stats
+      - Database__Password=UltimateStats2025!
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  mysql:
+    image: mariadb:10.6
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_123
+      MYSQL_DATABASE: ultimate_stats
+      MYSQL_USER: ultimate_stats
+      MYSQL_PASSWORD: UltimateStats2025!
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - cs-ranking-web
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
