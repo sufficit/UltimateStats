@@ -307,3 +307,33 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// Copy server address function
+function copyServerAddress() {
+    const serverAddress = 'cs.sufficit.com.br:27015';
+    navigator.clipboard.writeText(serverAddress).then(() => {
+        showNotification('Endereço copiado! Cole no console do Steam: connect ' + serverAddress);
+    }).catch(err => {
+        console.error('Erro ao copiar:', err);
+        showNotification('Copie manualmente: connect ' + serverAddress);
+    });
+}
+
+// Show notification
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}

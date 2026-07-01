@@ -53,9 +53,15 @@
                         <option value="all">Todos</option>
                     </select>
                 </div>
-                <a href="steam://connect/cs.sufficit.com.br" class="connect-button-small" title="Conectar ao Servidor">
-                    <span class="connect-icon-small">🎮</span>
-                </a>
+                <div class="server-connect-wrapper">
+                    <a href="steam://connect/cs.sufficit.com.br:27015" class="connect-button-small" title="Conectar via Steam" onclick="copyServerAddress()">
+                        <span class="connect-icon-small">🎮</span>
+                    </a>
+                    <div class="server-address-popup" id="serverAddressPopup">
+                        <span class="server-address-text">cs.sufficit.com.br:27015</span>
+                        <button class="copy-button" onclick="copyServerAddress()" title="Copiar endereço">📋</button>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -133,7 +139,11 @@
     <footer class="footer">
         <div class="container footer-content">
             <p>© 2024 CS 1.6 Ranking - Sufficit Network</p>
-            <p class="server-info">Servidor: <a href="steam://connect/cs.sufficit.com.br" class="server-link">cs.sufficit.com.br</a></p>
+            <p class="server-info">
+                Servidor: 
+                <a href="steam://connect/cs.sufficit.com.br:27015" class="server-link" onclick="copyServerAddress()">cs.sufficit.com.br:27015</a>
+                <button class="copy-button-inline" onclick="copyServerAddress()" title="Copiar endereço">📋</button>
+            </p>
         </div>
     </footer>
 
