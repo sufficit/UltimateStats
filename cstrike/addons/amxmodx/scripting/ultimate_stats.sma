@@ -226,7 +226,8 @@ public plugin_cfg()
 	server_cmd("exec %s/ultimate_stats.cfg", configPath);
 	server_exec();
 
-	sql_init();
+	// Aguarda um ciclo para que as cvars do arquivo executado atualizem os pcvars.
+	set_task(1.0, "sql_init");
 }
 
 public plugin_precache()
@@ -240,8 +241,8 @@ public plugin_precache()
 
 public plugin_end()
 {
-	SQL_FreeHandle(sql);
-	SQL_FreeHandle(connection);
+	if (sql) SQL_FreeHandle(sql);
+	if (connection) SQL_FreeHandle(connection);
 }
 
 public client_connect(id)
