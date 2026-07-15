@@ -8,7 +8,7 @@
 #include <sqlx>
 
 #define PLUGIN "UltimateStats Collector"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define AUTHOR "Sufficit"
 #define MAX_PLAYERS 32
 
@@ -17,13 +17,27 @@ new bool:g_Connected;
 new g_Kills[MAX_PLAYERS + 1], g_Deaths[MAX_PLAYERS + 1], g_Headshots[MAX_PLAYERS + 1], g_TeamKills[MAX_PLAYERS + 1];
 new g_SteamId[MAX_PLAYERS + 1][36], g_Ip[MAX_PLAYERS + 1][16], g_ConnectTime[MAX_PLAYERS + 1];
 new g_MapName[32];
+new g_CvarHost, g_CvarUser, g_CvarPass, g_CvarDb;
 
 public plugin_init()
 {
     register_plugin(PLUGIN, VERSION, AUTHOR);
     get_mapname(g_MapName, charsmax(g_MapName));
     register_event("DeathMsg", "event_death", "a");
-    set_task(1.0, "connect_sql");
+
+    // Os valores são definidos pelo configs/ultimate_stats.cfg.
+    g_CvarHost = register_cvar("ultimate_stats_host", "127.0.0.1");
+    g_CvarUser = register_cvar("ultimate_stats_user", "ultimate_stats");
+    g_CvarPass = register_cvar("ultimate_stats_pass", "");
+    g_CvarDb = register_cvar("ultimate_stats_db", "ultimate_stats");
+}
+
+public plugin_cfg()
+{
+    // Arquivos de plugin não são executados automaticamente pelo AMXX.
+    // Carrega os valores em configs/ultimate_stats.cfg antes de abrir o SQL.
+    server_cmd("exec addons/amxmodx/configs/ultimate_stats.cfg");
+    set_task(0.5, "connect_sql");
 }
 
 public plugin_end()
@@ -38,14 +52,18 @@ public client_connect(id)
     g_Deaths[id] = 0;
     g_Headshots[id] = 0;
     g_TeamKills[id] = 0;
+    g_ConnectTime[id] = get_systime();
+}
+
+public client_authorized(id)
+{
     get_user_authid(id, g_SteamId[id], charsmax(g_SteamId[]));
     get_user_ip(id, g_Ip[id], charsmax(g_Ip[]), 1);
-    g_ConnectTime[id] = get_systime();
 }
 
 public client_disconnected(id)
 {
-    if (g_Connected && !is_user_bot(id) && !is_user_hltv(id) && g_SteamId[id][0])
+    if (g_Connected && !is_user_bot(id) && !is_user_hltv(id) && containi(g_SteamId[id], "STEAM_") == 0)
         save_player(id);
 }
 
@@ -69,7 +87,17 @@ public event_death()
 
 public connect_sql()
 {
-    g_Tuple = SQL_MakeDbTuple("127.0.0.1", "ultimate_stats", "UltimateStats2025!", "ultimate_stats");
+    new host[64], user[64], pass[64], db[64];
+    get_pcvar_string(g_CvarHost, host, charsmax(host));
+    get_pcvar_string(g_CvarUser, user, charsmax(user));
+    get_pcvar_string(g_CvarPass, pass, charsmax(pass));
+    get_pcvar_string(g_CvarDb, db, charsmax(db));
+
+    g_Connected = false;
+    if (g_Tuple)
+        SQL_FreeHandle(g_Tuple);
+
+    g_Tuple = SQL_MakeDbTuple(host, user, pass, db);
     SQL_ThreadQuery(g_Tuple, "on_connection", "SELECT 1");
 }
 
@@ -92,11 +120,18 @@ public on_connection(failState, Handle:query, error[], errorCode, data[], dataSi
 
 public save_player(id)
 {
-    new name[32], queryData[768], duration = get_systime() - g_ConnectTime[id];
+    new name[32], steamId[36], ip[16], queryData[768], duration = get_systime() - g_ConnectTime[id], now = get_systime();
     get_user_name(id, name, charsmax(name));
     escape_sql(name, charsmax(name));
+    copy(steamId, charsmax(steamId), g_SteamId[id]);
+    copy(ip, charsmax(ip), g_Ip[id]);
+    escape_sql(steamId, charsmax(steamId));
+    escape_sql(ip, charsmax(ip));
 
-    formatex(queryData, charsmax(queryData), "INSERT INTO ultimate_stats (name, steamid, ip, kills, deaths, hs_kills, team_kills, connects, `time`, first_visit, last_visit) VALUES ('%s', '%s', '%s', %d, %d, %d, %d, 1, %d, %d, %d) ON DUPLICATE KEY UPDATE name=VALUES(name), ip=VALUES(ip), kills=kills+VALUES(kills), deaths=deaths+VALUES(deaths), hs_kills=hs_kills+VALUES(hs_kills), team_kills=team_kills+VALUES(team_kills), connects=connects+1, `time`=`time`+VALUES(`time`), last_visit=VALUES(last_visit)", name, g_SteamId[id], g_Ip[id], g_Kills[id], g_Deaths[id], g_Headshots[id], g_TeamKills[id], duration, get_systime(), get_systime());
+    if (duration < 0)
+        duration = 0;
+
+    formatex(queryData, charsmax(queryData), "INSERT INTO ultimate_stats (name, steamid, ip, kills, deaths, hs_kills, team_kills, connects, `time`, first_visit, last_visit) VALUES ('%s', '%s', '%s', %d, %d, %d, %d, 1, %d, %d, %d) ON DUPLICATE KEY UPDATE name=VALUES(name), ip=VALUES(ip), kills=kills+VALUES(kills), deaths=deaths+VALUES(deaths), hs_kills=hs_kills+VALUES(hs_kills), team_kills=team_kills+VALUES(team_kills), connects=connects+1, `time`=`time`+VALUES(`time`), last_visit=VALUES(last_visit)", name, steamId, ip, g_Kills[id], g_Deaths[id], g_Headshots[id], g_TeamKills[id], duration, now, now);
     SQL_ThreadQuery(g_Tuple, "ignore_query", queryData);
 }
 
